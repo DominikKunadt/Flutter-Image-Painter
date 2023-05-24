@@ -45,6 +45,7 @@ class ImagePainter extends StatefulWidget {
     this.textDelegate,
     this.toolbarColor,
     this.toolbarIconColor,
+    this.popupMenuBackgroundColor,
   }) : super(key: key);
 
   ///Constructor for loading image from network url.
@@ -70,6 +71,7 @@ class ImagePainter extends StatefulWidget {
     bool? controlsAtTop,
     Color? toolbarColor,
     Color? toolbarIconColor,
+    Color? popupMenuBackgroundColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -93,6 +95,7 @@ class ImagePainter extends StatefulWidget {
       controlsAtTop: controlsAtTop ?? true,
       toolbarColor: toolbarColor,
       toolbarIconColor: toolbarIconColor,
+      popupMenuBackgroundColor: popupMenuBackgroundColor,
     );
   }
 
@@ -119,6 +122,7 @@ class ImagePainter extends StatefulWidget {
     bool? controlsAtTop,
     Color? toolbarColor,
     Color? toolbarIconColor,
+    Color? popupMenuBackgroundColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -142,6 +146,7 @@ class ImagePainter extends StatefulWidget {
       controlsAtTop: controlsAtTop ?? true,
       toolbarColor: toolbarColor,
       toolbarIconColor: toolbarIconColor,
+      popupMenuBackgroundColor: popupMenuBackgroundColor,
     );
   }
 
@@ -168,6 +173,7 @@ class ImagePainter extends StatefulWidget {
     bool? controlsAtTop,
     Color? toolbarColor,
     Color? toolbarIconColor,
+    Color? popupMenuBackgroundColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -191,6 +197,7 @@ class ImagePainter extends StatefulWidget {
       controlsAtTop: controlsAtTop ?? true,
       toolbarColor: toolbarColor,
       toolbarIconColor: toolbarIconColor,
+      popupMenuBackgroundColor: popupMenuBackgroundColor,
     );
   }
 
@@ -217,6 +224,7 @@ class ImagePainter extends StatefulWidget {
     bool? controlsAtTop,
     Color? toolbarColor,
     Color? toolbarIconColor,
+    Color? popupMenuBackgroundColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -240,6 +248,7 @@ class ImagePainter extends StatefulWidget {
       controlsAtTop: controlsAtTop ?? true,
       toolbarColor: toolbarColor,
       toolbarIconColor: toolbarIconColor,
+      popupMenuBackgroundColor: popupMenuBackgroundColor,
     );
   }
 
@@ -261,6 +270,7 @@ class ImagePainter extends StatefulWidget {
     bool? controlsAtTop,
     Color? toolbarColor,
     Color? toolbarIconColor,
+    Color? popupMenuBackgroundColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -281,6 +291,7 @@ class ImagePainter extends StatefulWidget {
       controlsAtTop: controlsAtTop ?? true,
       toolbarColor: toolbarColor,
       toolbarIconColor: toolbarIconColor,
+      popupMenuBackgroundColor: popupMenuBackgroundColor,
     );
   }
 
@@ -356,6 +367,8 @@ class ImagePainter extends StatefulWidget {
   //the text delegate
   final TextDelegate? textDelegate;
 
+  final Color? popupMenuBackgroundColor;
+
   @override
   ImagePainterState createState() => ImagePainterState();
 }
@@ -392,7 +405,7 @@ class ImagePainterState extends State<ImagePainter> {
 
     _textController = TextEditingController();
     _transformationController = TransformationController();
-    textDelegate = widget.textDelegate ?? TextDelegate();
+    textDelegate = widget.textDelegate ?? TextDelegateEn();
   }
 
   @override
@@ -584,12 +597,12 @@ class ImagePainterState extends State<ImagePainter> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                  tooltip: textDelegate.undo,
+                  tooltip: textDelegate.undo(context),
                   icon: widget.undoIcon ??
                       Icon(Icons.reply, color: Colors.grey[700]),
                   onPressed: () => _controller.undo()),
               IconButton(
-                tooltip: textDelegate.clearAllProgress,
+                tooltip: textDelegate.clearAllProgress(context),
                 icon: widget.clearAllIcon ??
                     Icon(Icons.clear, color: Colors.grey[700]),
                 onPressed: () => _controller.clear(),
@@ -680,7 +693,8 @@ class ImagePainterState extends State<ImagePainter> {
       child: Center(
         child: SizedBox(
           child: Wrap(
-            children: paintModes(textDelegate)
+            children: paintModes(textDelegate, context)
+                .where((element) => element.mode != PaintMode.text)
                 .map(
                   (item) => SelectionItems(
                     data: item,
@@ -814,11 +828,12 @@ class ImagePainterState extends State<ImagePainter> {
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
-              final icon = paintModes(textDelegate)
+              final icon = paintModes(textDelegate, context)
                   .firstWhere((item) => item.mode == _controller.mode)
                   .icon;
               return PopupMenuButton(
-                tooltip: textDelegate.changeMode,
+                tooltip: textDelegate.changeMode(context),
+                color: widget.popupMenuBackgroundColor,
                 shape: ContinuousRectangleBorder(
                   borderRadius: BorderRadius.circular(40),
                 ),
@@ -836,7 +851,7 @@ class ImagePainterState extends State<ImagePainter> {
                 shape: ContinuousRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                tooltip: textDelegate.changeColor,
+                tooltip: textDelegate.changeColor(context),
                 icon: widget.colorIcon ??
                     Container(
                       padding: const EdgeInsets.all(2.0),
@@ -851,7 +866,7 @@ class ImagePainterState extends State<ImagePainter> {
             },
           ),
           PopupMenuButton(
-            tooltip: textDelegate.changeBrushSize,
+            tooltip: textDelegate.changeBrushSize(context),
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -864,14 +879,14 @@ class ImagePainterState extends State<ImagePainter> {
               icon: const Icon(Icons.text_format), onPressed: _openTextDialog),
           const Spacer(),
           IconButton(
-            tooltip: textDelegate.undo,
+            tooltip: textDelegate.undo(context),
             icon: widget.undoIcon ??
                 Icon(Icons.reply,
                     color: widget.toolbarIconColor ?? Colors.grey[700]),
             onPressed: () => _controller.undo(),
           ),
           IconButton(
-            tooltip: textDelegate.clearAllProgress,
+            tooltip: textDelegate.clearAllProgress(context),
             icon: widget.clearAllIcon ??
                 Icon(Icons.clear,
                     color: widget.toolbarIconColor ?? Colors.grey[700]),

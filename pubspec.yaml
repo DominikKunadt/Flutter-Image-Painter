@@ -11,6 +11,3 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-dev_dependencies:
-  lint_factory: ^3.7.0

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../delegates/text_delegate.dart';
 
 class TextDialog extends StatelessWidget {
@@ -53,7 +54,7 @@ class TextDialog extends StatelessWidget {
             alignment: Alignment.bottomRight,
             child: TextButton(
                 child: Text(
-                  textDelegate.done,
+                  textDelegate.done(context),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
