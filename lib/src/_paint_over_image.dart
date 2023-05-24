@@ -5,14 +5,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-
-import '_controller.dart';
-import '_image_painter.dart';
-import 'delegates/text_delegate.dart';
-import 'widgets/_color_widget.dart';
-import 'widgets/_mode_widget.dart';
-import 'widgets/_range_slider.dart';
-import 'widgets/_text_dialog.dart';
+import 'package:image_painter/src/_controller.dart';
+import 'package:image_painter/src/_image_painter.dart';
+import 'package:image_painter/src/delegates/text_delegate.dart';
+import 'package:image_painter/src/widgets/_color_widget.dart';
+import 'package:image_painter/src/widgets/_mode_widget.dart';
+import 'package:image_painter/src/widgets/_range_slider.dart';
+import 'package:image_painter/src/widgets/_text_dialog.dart';
 
 export '_image_painter.dart';
 
@@ -44,6 +43,8 @@ class ImagePainter extends StatefulWidget {
     this.onStrokeWidthChanged,
     this.onPaintModeChanged,
     this.textDelegate,
+    this.toolbarColor,
+    this.toolbarIconColor,
   }) : super(key: key);
 
   ///Constructor for loading image from network url.
@@ -67,6 +68,8 @@ class ImagePainter extends StatefulWidget {
     ValueChanged<double>? onStrokeWidthChanged,
     TextDelegate? textDelegate,
     bool? controlsAtTop,
+    Color? toolbarColor,
+    Color? toolbarIconColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -88,6 +91,8 @@ class ImagePainter extends StatefulWidget {
       onStrokeWidthChanged: onStrokeWidthChanged,
       textDelegate: textDelegate,
       controlsAtTop: controlsAtTop ?? true,
+      toolbarColor: toolbarColor,
+      toolbarIconColor: toolbarIconColor,
     );
   }
 
@@ -112,6 +117,8 @@ class ImagePainter extends StatefulWidget {
     ValueChanged<double>? onStrokeWidthChanged,
     TextDelegate? textDelegate,
     bool? controlsAtTop,
+    Color? toolbarColor,
+    Color? toolbarIconColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -133,6 +140,8 @@ class ImagePainter extends StatefulWidget {
       onStrokeWidthChanged: onStrokeWidthChanged,
       textDelegate: textDelegate,
       controlsAtTop: controlsAtTop ?? true,
+      toolbarColor: toolbarColor,
+      toolbarIconColor: toolbarIconColor,
     );
   }
 
@@ -157,6 +166,8 @@ class ImagePainter extends StatefulWidget {
     ValueChanged<double>? onStrokeWidthChanged,
     TextDelegate? textDelegate,
     bool? controlsAtTop,
+    Color? toolbarColor,
+    Color? toolbarIconColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -178,6 +189,8 @@ class ImagePainter extends StatefulWidget {
       onStrokeWidthChanged: onStrokeWidthChanged,
       textDelegate: textDelegate,
       controlsAtTop: controlsAtTop ?? true,
+      toolbarColor: toolbarColor,
+      toolbarIconColor: toolbarIconColor,
     );
   }
 
@@ -202,6 +215,8 @@ class ImagePainter extends StatefulWidget {
     ValueChanged<double>? onStrokeWidthChanged,
     TextDelegate? textDelegate,
     bool? controlsAtTop,
+    Color? toolbarColor,
+    Color? toolbarIconColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -223,6 +238,8 @@ class ImagePainter extends StatefulWidget {
       onStrokeWidthChanged: onStrokeWidthChanged,
       textDelegate: textDelegate,
       controlsAtTop: controlsAtTop ?? true,
+      toolbarColor: toolbarColor,
+      toolbarIconColor: toolbarIconColor,
     );
   }
 
@@ -242,6 +259,8 @@ class ImagePainter extends StatefulWidget {
     ValueChanged<double>? onStrokeWidthChanged,
     TextDelegate? textDelegate,
     bool? controlsAtTop,
+    Color? toolbarColor,
+    Color? toolbarIconColor,
   }) {
     return ImagePainter._(
       key: key,
@@ -260,11 +279,17 @@ class ImagePainter extends StatefulWidget {
       onStrokeWidthChanged: onStrokeWidthChanged,
       textDelegate: textDelegate,
       controlsAtTop: controlsAtTop ?? true,
+      toolbarColor: toolbarColor,
+      toolbarIconColor: toolbarIconColor,
     );
   }
 
   ///Only accessible through [ImagePainter.network] constructor.
   final String? networkUrl;
+
+  final Color? toolbarColor;
+
+  final Color? toolbarIconColor;
 
   ///Only accessible through [ImagePainter.memory] constructor.
   final Uint8List? byteArray;
@@ -391,7 +416,7 @@ class ImagePainterState extends State<ImagePainter> {
     if (widget.networkUrl != null) {
       _image = await _loadNetworkImage(widget.networkUrl!);
       if (_image == null) {
-        throw ("${widget.networkUrl} couldn't be resolved.");
+        throw "${widget.networkUrl} couldn't be resolved.";
       } else {
         _setStrokeMultiplier();
       }
@@ -399,7 +424,7 @@ class ImagePainterState extends State<ImagePainter> {
       final img = await rootBundle.load(widget.assetPath!);
       _image = await _convertImage(Uint8List.view(img.buffer));
       if (_image == null) {
-        throw ("${widget.assetPath} couldn't be resolved.");
+        throw "${widget.assetPath} couldn't be resolved.";
       } else {
         _setStrokeMultiplier();
       }
@@ -407,14 +432,14 @@ class ImagePainterState extends State<ImagePainter> {
       final img = await widget.file!.readAsBytes();
       _image = await _convertImage(img);
       if (_image == null) {
-        throw ("Image couldn't be resolved from provided file.");
+        throw "Image couldn't be resolved from provided file.";
       } else {
         _setStrokeMultiplier();
       }
     } else if (widget.byteArray != null) {
       _image = await _convertImage(widget.byteArray!);
       if (_image == null) {
-        throw ("Image couldn't be resolved from provided byteArray.");
+        throw "Image couldn't be resolved from provided byteArray.";
       } else {
         _setStrokeMultiplier();
       }
@@ -445,7 +470,7 @@ class ImagePainterState extends State<ImagePainter> {
   ///Completer function to convert network image to [ui.Image] before drawing on custompainter.
   Future<ui.Image> _loadNetworkImage(String path) async {
     final completer = Completer<ImageInfo>();
-    var img = NetworkImage(path);
+    final img = NetworkImage(path);
     img.resolve(const ImageConfiguration()).addListener(
         ImageStreamListener((info, _) => completer.complete(info)));
     final imageInfo = await completer.future;
@@ -461,7 +486,7 @@ class ImagePainterState extends State<ImagePainter> {
         if (loaded) {
           return widget.isSignature ? _paintSignature() : _paintImage();
         } else {
-          return Container(
+          return SizedBox(
             height: widget.height ?? double.maxFinite,
             width: widget.width ?? double.maxFinite,
             child: Center(
@@ -475,7 +500,7 @@ class ImagePainterState extends State<ImagePainter> {
 
   ///paints image on given constrains for drawing if image is not null.
   Widget _paintImage() {
-    return Container(
+    return SizedBox(
       height: widget.height ?? double.maxFinite,
       width: widget.width ?? double.maxFinite,
       child: Column(
@@ -524,7 +549,7 @@ class ImagePainterState extends State<ImagePainter> {
         RepaintBoundary(
           key: _repaintKey,
           child: ClipRect(
-            child: Container(
+            child: SizedBox(
               width: widget.width ?? double.maxFinite,
               height: widget.height ?? double.maxFinite,
               child: AnimatedBuilder(
@@ -577,30 +602,30 @@ class ImagePainterState extends State<ImagePainter> {
   }
 
   _scaleStartGesture(ScaleStartDetails onStart) {
-    final _zoomAdjustedOffset =
+    final zoomAdjustedOffset =
         _transformationController.toScene(onStart.localFocalPoint);
     if (!widget.isSignature) {
-      _controller.setStart(_zoomAdjustedOffset);
-      _controller.addOffsets(_zoomAdjustedOffset);
+      _controller.setStart(zoomAdjustedOffset);
+      _controller.addOffsets(zoomAdjustedOffset);
     }
   }
 
   ///Fires while user is interacting with the screen to record painting.
   void _scaleUpdateGesture(ScaleUpdateDetails onUpdate) {
-    final _zoomAdjustedOffset =
+    final zoomAdjustedOffset =
         _transformationController.toScene(onUpdate.localFocalPoint);
     _controller.setInProgress(true);
     if (_controller.start == null) {
-      _controller.setStart(_zoomAdjustedOffset);
+      _controller.setStart(zoomAdjustedOffset);
     }
-    _controller.setEnd(_zoomAdjustedOffset);
+    _controller.setEnd(zoomAdjustedOffset);
     if (_controller.mode == PaintMode.freeStyle) {
-      _controller.addOffsets(_zoomAdjustedOffset);
+      _controller.addOffsets(zoomAdjustedOffset);
     }
     if (_controller.onTextUpdateMode) {
       _controller.paintHistory
           .lastWhere((element) => element.mode == PaintMode.text)
-          .offset = [_zoomAdjustedOffset];
+          .offset = [zoomAdjustedOffset];
     }
   }
 
@@ -728,18 +753,18 @@ class ImagePainterState extends State<ImagePainter> {
   ///Generates [Uint8List] of the [ui.Image] generated by the [renderImage()] method.
   ///Can be converted to image file by writing as bytes.
   Future<Uint8List?> exportImage() async {
-    late ui.Image _convertedImage;
+    late ui.Image convertedImage;
     if (widget.isSignature) {
-      final _boundary = _repaintKey.currentContext!.findRenderObject()
+      final boundary = _repaintKey.currentContext!.findRenderObject()
           as RenderRepaintBoundary;
-      _convertedImage = await _boundary.toImage(pixelRatio: 3);
+      convertedImage = await boundary.toImage(pixelRatio: 3);
     } else if (widget.byteArray != null && _controller.paintHistory.isEmpty) {
       return widget.byteArray;
     } else {
-      _convertedImage = await _renderImage();
+      convertedImage = await _renderImage();
     }
     final byteData =
-        await _convertedImage.toByteData(format: ui.ImageByteFormat.png);
+        await convertedImage.toByteData(format: ui.ImageByteFormat.png);
     return byteData?.buffer.asUint8List();
   }
 
@@ -783,7 +808,7 @@ class ImagePainterState extends State<ImagePainter> {
   Widget _buildControls() {
     return Container(
       padding: const EdgeInsets.all(4),
-      color: Colors.grey[200],
+      color: widget.toolbarColor ?? Colors.grey[200],
       child: Row(
         children: [
           AnimatedBuilder(
@@ -797,7 +822,8 @@ class ImagePainterState extends State<ImagePainter> {
                 shape: ContinuousRectangleBorder(
                   borderRadius: BorderRadius.circular(40),
                 ),
-                icon: Icon(icon, color: Colors.grey[700]),
+                icon: Icon(icon,
+                    color: widget.toolbarIconColor ?? Colors.grey[700]),
                 itemBuilder: (_) => [_showOptionsRow()],
               );
             },
@@ -829,8 +855,9 @@ class ImagePainterState extends State<ImagePainter> {
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            icon:
-                widget.brushIcon ?? Icon(Icons.brush, color: Colors.grey[700]),
+            icon: widget.brushIcon ??
+                Icon(Icons.brush,
+                    color: widget.toolbarIconColor ?? Colors.grey[700]),
             itemBuilder: (_) => [_showRangeSlider()],
           ),
           IconButton(
@@ -838,13 +865,16 @@ class ImagePainterState extends State<ImagePainter> {
           const Spacer(),
           IconButton(
             tooltip: textDelegate.undo,
-            icon: widget.undoIcon ?? Icon(Icons.reply, color: Colors.grey[700]),
+            icon: widget.undoIcon ??
+                Icon(Icons.reply,
+                    color: widget.toolbarIconColor ?? Colors.grey[700]),
             onPressed: () => _controller.undo(),
           ),
           IconButton(
             tooltip: textDelegate.clearAllProgress,
             icon: widget.clearAllIcon ??
-                Icon(Icons.clear, color: Colors.grey[700]),
+                Icon(Icons.clear,
+                    color: widget.toolbarIconColor ?? Colors.grey[700]),
             onPressed: () => _controller.clear(),
           ),
         ],
